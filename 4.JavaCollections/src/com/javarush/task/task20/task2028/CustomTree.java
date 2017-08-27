@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /* 
 Построй дерево(1)
@@ -59,7 +61,148 @@ public class CustomTree extends AbstractList<String> implements Cloneable, Seria
 
     @Override
     public int size() {
-        return 0;
+
+        if (root == null)
+            return 0;
+
+        Queue<Entry<String>> queue = new ConcurrentLinkedQueue<>();
+
+        int size = 1;
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            Entry<String> currentEntry = queue.remove();
+            if (!currentEntry.availableToAddRightChildren && currentEntry.rightChild != null) {
+                ++size;
+                queue.add(currentEntry.rightChild);
+            }
+            if (!currentEntry.availableToAddLeftChildren && currentEntry.leftChild != null) {
+                ++size;
+                queue.add(currentEntry.leftChild);
+            }
+        }
+
+        return size;
+
+    }
+
+    @Override
+    public boolean add(String s) {
+
+        if (root == null) {
+            root = new Entry<>(s);
+            return false;
+        }
+
+        Queue<Entry<String>> queue = new ConcurrentLinkedQueue<>();
+
+        queue.add(root);
+        boolean isAdded = false;
+        Entry<String> currentEntry;
+
+        while (!isAdded && !queue.isEmpty()) {
+
+            currentEntry = queue.remove();
+
+            if (!currentEntry.availableToAddLeftChildren && currentEntry.leftChild != null)
+                queue.add(currentEntry.leftChild);
+
+             else {
+                if (!isAdded && currentEntry.availableToAddLeftChildren) {
+                    Entry<String> newEntry = new Entry<String>(s);
+                    newEntry.parent = currentEntry;
+                    currentEntry.leftChild = newEntry;
+                    isAdded = true;
+                    currentEntry.checkChildren();
+                }
+            }
+
+            if (!currentEntry.availableToAddRightChildren && currentEntry.rightChild != null)
+                queue.add(currentEntry.rightChild);
+
+             else {
+                if (!isAdded && currentEntry.availableToAddRightChildren) {
+                    Entry<String> newEntry = new Entry<String>(s);
+                    newEntry.parent = currentEntry;
+                    currentEntry.rightChild = newEntry;
+                    isAdded = true;
+                    currentEntry.checkChildren();
+                }
+            }
+        }
+
+        return false;
+
+    }
+
+    public void remove(String s) {
+
+        if (root == null)
+            return;
+
+        Queue<Entry<String>> queue = new ConcurrentLinkedQueue<>();
+
+        queue.add(root);
+        boolean isRemoved = false;
+        Entry<String> currentEntry;
+
+        while (!isRemoved && !queue.isEmpty()) {
+
+            currentEntry = queue.remove();
+
+            if (!currentEntry.leftChild.elementName.equals(s))
+                queue.add(currentEntry.leftChild);
+             else {
+                if (!isRemoved) {
+                    currentEntry.leftChild = null;
+                    isRemoved = true;
+                }
+            }
+            if (!currentEntry.rightChild.elementName.equals(s))
+                queue.add(currentEntry.rightChild);
+             else {
+                if (!isRemoved) {
+                    currentEntry.rightChild = null;
+                    isRemoved = true;
+                }
+            }
+        }
+
+    }
+
+    public String getParent(String s) {
+
+        if (root == null)
+            return null;
+
+        Queue<Entry<String>> queue = new ConcurrentLinkedQueue<>();
+
+        queue.add(root);
+        String parentName = null;
+        Entry<String> currentEntry;
+
+        while (parentName == null && !queue.isEmpty()) {
+
+            currentEntry = queue.remove();
+
+            if (currentEntry.leftChild != null ) {
+                if (!currentEntry.leftChild.elementName.equals(s))
+                    queue.add(currentEntry.leftChild);
+                 else
+                    parentName = currentEntry.elementName;
+
+            }
+            if (currentEntry.rightChild != null) {
+                if (!currentEntry.rightChild.elementName.equals(s))
+                    queue.add(currentEntry.rightChild);
+                 else
+                    parentName = currentEntry.elementName;
+
+            }
+        }
+
+        return parentName;
+
     }
 
     static class Entry<T> implements Serializable {
@@ -85,6 +228,7 @@ public class CustomTree extends AbstractList<String> implements Cloneable, Seria
         boolean isAvailableToAddChildren() {
             return availableToAddLeftChildren || availableToAddRightChildren;
         }
+
 
     }
 }

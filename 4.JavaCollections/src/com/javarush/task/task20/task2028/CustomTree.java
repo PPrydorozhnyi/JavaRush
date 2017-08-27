@@ -19,9 +19,9 @@ public class CustomTree extends AbstractList<String> implements Cloneable, Seria
         for (int i = 1; i < 16; i++) {
             list.add(String.valueOf(i));
         }
-        //System.out.println("Expected 3, actual is " + ((CustomTree) list).getParent("8"));
+        System.out.println("Expected 3, actual is " + ((CustomTree) list).getParent("8"));
         list.remove("5");
-        //System.out.println("Expected null, actual is " + ((CustomTree) list).getParent("11"));
+        System.out.println("Expected null, actual is " + ((CustomTree) list).getParent("11"));
     }
 
     @Override
@@ -133,6 +133,13 @@ public class CustomTree extends AbstractList<String> implements Cloneable, Seria
 
         return false;
 
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        String s = (String) o;
+        this.remove(s);
+        return false;
     }
 
     public void remove(String s) {

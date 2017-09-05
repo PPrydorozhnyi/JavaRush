@@ -34,7 +34,7 @@ public class Solution {
 
 
         try {
-            output.write(passw.toString().getBytes());
+            output.write(password.toString().getBytes());
         } catch (Exception e)
         {
             e.printStackTrace();
